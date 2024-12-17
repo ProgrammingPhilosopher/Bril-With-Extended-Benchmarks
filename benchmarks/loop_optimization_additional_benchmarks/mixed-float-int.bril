@@ -1,0 +1,20 @@
+@main {
+  M: int = const 5;
+  X: float = const 2.5;
+  base: float = const 3.14;
+  k: int = const 0;
+
+.loop_check:
+  cond: bool = lt k M;
+  br cond .loop_body .done;
+
+.loop_body:
+  fval: float = fadd base X; # 3.14+2.5=5.64
+  print fval;
+  one: int = const 1;
+  k: int = add k one;
+  jmp .loop_check;
+
+.done:
+  ret;
+}

@@ -1,0 +1,33 @@
+@main {
+  base: int = const 42;
+  i: int = const 0;
+  limit: int = const 3;
+
+.loop_check:
+  cond: bool = lt i limit;
+  br cond .loop_body .done;
+
+.loop_body:
+  # Condition that never triggers (e.g., i < 0), always false
+  zero: int = const 0;
+  never_true: bool = lt i zero;
+  br never_true .then .else;
+
+.then:
+  # This block never runs, but if the optimizer is naive, it may consider computations inside
+  x: int = add base base;
+  print x;
+  jmp .merge;
+
+.else:
+  one: int = const 1;
+  i: int = add i one;
+  jmp .merge;
+
+.merge:
+  jmp .loop_check;
+
+.done:
+  print base;
+  ret;
+}

@@ -1,0 +1,20 @@
+@main {
+  N: int = const 5;
+  step: int = const 2;
+  four: int = const 4;
+  limit: int = mul N four;  # limit=20
+  i: int = const 0;
+
+.check:
+  cond: bool = lt i limit; # i<20
+  br cond .body .done;
+
+.body:
+  inv_calc: int = add i i;
+  print inv_calc;
+  i: int = add i step;
+  jmp .check;
+
+.done:
+  ret;
+}

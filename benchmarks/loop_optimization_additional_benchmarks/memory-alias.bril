@@ -1,0 +1,25 @@
+@main {
+  N: int = const 5;
+  ptr: ptr<int> = alloc N;
+
+  zero: int = const 0;
+  store ptr zero;
+
+  i: int = const 0;
+.loop_check:
+  cond: bool = lt i N;
+  br cond .loop_body .done;
+
+.loop_body:
+  val: int = load ptr;
+  print val;
+  one: int = const 1;
+  incr: int = add val one;
+  store ptr incr;
+  i: int = add i one;
+  jmp .loop_check;
+
+.done:
+  free ptr;
+  ret;
+}

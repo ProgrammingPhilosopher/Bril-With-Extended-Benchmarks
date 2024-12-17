@@ -1,0 +1,20 @@
+@main {
+  outer_val: int = const 7;
+  inner: int = const 1;
+  limit: int = const 4;
+
+.loop_check:
+  c: bool = lt inner limit;
+  br c .loop_body .done;
+
+.loop_body:
+  # outer_val is invariant, but this instruction depends on inner
+  prod: int = mul outer_val inner;
+  print prod;
+  one: int = const 1;
+  inner: int = add inner one;
+  jmp .loop_check;
+
+.done:
+  ret;
+}

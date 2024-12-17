@@ -1,0 +1,20 @@
+@main {
+  ten: int = const 10;
+  sum: int = const 0;
+  i: int = const 0;
+  limit: int = const 5;
+
+.loop_check:
+  c: bool = lt i limit;
+  br c .loop_body .done;
+
+.loop_body:
+  sum: int = add sum ten;
+  one: int = const 1;
+  i: int = add i one;
+  jmp .loop_check;
+
+.done:
+  print sum;
+  ret;
+}

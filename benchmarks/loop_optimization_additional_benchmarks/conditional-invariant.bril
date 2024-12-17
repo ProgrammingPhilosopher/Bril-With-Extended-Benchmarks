@@ -1,0 +1,30 @@
+@main {
+  N: int = const 10;
+  i: int = const 0;
+  base: int = const 10;
+
+.loop_check:
+  cond: bool = lt i N;
+  br cond .loop_body .done;
+
+.loop_body:
+  zero: int = const 0;
+  is_zero: bool = eq i zero;
+  br is_zero .then .else;
+
+.then:
+  inv_calc: int = mul base base;
+  i: int = add i inv_calc;
+  jmp .merge;
+
+.else:
+  one: int = const 1;
+  i: int = add i one;
+  jmp .merge;
+
+.merge:
+  jmp .loop_check;
+
+.done:
+  print i;
+}

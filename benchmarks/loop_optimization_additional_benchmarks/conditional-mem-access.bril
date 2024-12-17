@@ -1,0 +1,35 @@
+@main {
+  N: int = const 10;
+  threshold: int = const 5;
+  ptr: ptr<int> = alloc threshold;
+
+  ninety_nine: int = const 99;
+  store ptr ninety_nine;
+
+  i: int = const 0;
+
+.check:
+  cond: bool = lt i N;
+  br cond .body .done;
+
+.body:
+  small: bool = lt i threshold;
+  br small .use_it .skip;
+
+.use_it:
+  val: int = load ptr;
+  print val;
+  jmp .merge;
+
+.skip:
+  jmp .merge;
+
+.merge:
+  one: int = const 1;
+  i: int = add i one;
+  jmp .check;
+
+.done:
+  free ptr;
+  ret;
+}

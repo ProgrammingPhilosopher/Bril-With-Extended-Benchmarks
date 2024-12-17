@@ -1,0 +1,19 @@
+@main {
+  start: int = const 5;
+  end: int = const 5;
+  i: int = id start;
+
+.check:
+  cond: bool = lt i end;
+  br cond .loop_body .exit;
+
+.loop_body:
+  ten: int = const 10;
+  inv: int = add end ten;
+  print inv;
+  ret;
+
+.exit:
+  print i;
+  ret;
+}

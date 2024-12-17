@@ -1,0 +1,25 @@
+@main {
+  start: int = const 5;
+  end: int = const 5;
+  ptr: ptr<int> = alloc end;
+  
+  hundred: int = const 100;
+  store ptr hundred;
+
+  i: int = id start;
+
+.check:
+  cond: bool = lt i end;
+  br cond .loop_body .exit;
+
+.loop_body:
+  data: int = load ptr;
+  print data;
+  free ptr;
+  ret;
+
+.exit:
+  print end;
+  free ptr;
+  ret;
+}

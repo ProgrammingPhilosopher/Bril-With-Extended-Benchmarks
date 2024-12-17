@@ -1,0 +1,32 @@
+@main {
+  N: int = const 3;
+  i: int = const 0;
+  cst: int = const 100;
+
+.outer_check:
+  ocond: bool = lt i N;
+  br ocond .outer_body .done;
+
+.outer_body:
+  j: int = const 0;
+
+.inner_check:
+  icond: bool = lt j N;
+  br icond .inner_body .outer_incr;
+
+.inner_body:
+  two: int = const 2;
+  inv: int = mul cst two;
+  print inv;
+  one: int = const 1;
+  j: int = add j one;
+  jmp .inner_check;
+
+.outer_incr:
+  one2: int = const 1;
+  i: int = add i one2;
+  jmp .outer_check;
+
+.done:
+  ret;
+}

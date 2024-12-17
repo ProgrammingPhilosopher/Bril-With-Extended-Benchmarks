@@ -1,0 +1,22 @@
+@main {
+  i: int = const 0;
+  limit: int = const 4;
+  var: int = const 0;
+
+.loop_check:
+  c: bool = lt i limit;
+  br c .loop_body .done;
+
+.loop_body:
+  # var is redefined each iteration, depending on i
+  two: int = const 2;
+  var: int = add i two;   # var changes every iteration
+  
+  print var;
+  one: int = const 1;
+  i: int = add i one;
+  jmp .loop_check;
+
+.done:
+  ret;
+}
