@@ -1,0 +1,43 @@
+@main {
+  cond1: bool = const true;
+  cond2: bool = const false;
+
+  val1: int = const 42;
+  val2: int = const 100;
+  val3: int = const 200;
+
+  # Allocate memory for a pointer
+  ptr: ptr<int> = alloc val1;
+
+  # Redundant store: initial_val is immediately overwritten
+  initial_val: int = const 0;
+  store ptr initial_val;
+
+  # First branch
+  br cond1 .branch1 .branch2;
+
+.branch1:
+  store_val1: int = const 300;
+  store ptr store_val1;  # This store will remain
+  store_val2: int = const 400;
+  store ptr store_val2;  # This store makes the previous one redundant
+  jmp .after_branch;
+
+.branch2:
+  store_val3: int = const 500;
+  store ptr store_val3;  # This store only happens if branch2 is taken
+  jmp .after_branch;
+
+.after_branch:
+  # Load the value after the branches
+  final_val: int = load ptr;
+  print final_val;
+
+  # Add some computation to ensure load is used
+  extra_val: int = const 1000;
+  sum: int = add final_val extra_val;
+  print sum;
+
+  # Final cleanup
+  free ptr;
+}

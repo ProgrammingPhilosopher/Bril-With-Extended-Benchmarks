@@ -1,0 +1,80 @@
+@find_max(arr: ptr<int>, size: int): int {
+    i: int = const 1;          # Start from the second element
+    max_val: int = load arr;   # Assume the first element is the max
+    one: int = const 1;
+
+.loop:
+    cond: bool = lt i size;
+    br cond .body .end;
+
+.body:
+    loc: ptr<int> = ptradd arr i;
+    curr_val: int = load loc;
+
+    # Compare and update max_val if needed
+    is_greater: bool = gt curr_val max_val;
+    br is_greater .update .skip;
+
+.update:
+    temp: int = const 999;      # Dummy value
+    store loc temp;             # Redundant store
+    store loc curr_val;         # Correct store of `curr_val` into `loc`
+
+    # Update max_val
+    max_val: int = id curr_val; # Correct assignment to `max_val`
+
+    jmp .skip;
+
+.skip:
+    i: int = add i one;
+    jmp .loop;
+
+.end:
+    ret max_val;
+}
+
+@main() {
+    size: int = const 5;
+    e1: int = const 3;
+    e2: int = const 1;
+    e3: int = const 4;
+    e4: int = const 1;
+    e5: int = const 5;
+
+    zero: int = const 0;
+    one: int = const 1;
+    two: int = const 2;
+    three: int = const 3;
+    four: int = const 4;
+
+    # Allocate and initialize array
+    arr: ptr<int> = alloc size;
+    loc1: ptr<int> = ptradd arr zero;
+    loc2: ptr<int> = ptradd arr one;
+    loc3: ptr<int> = ptradd arr two;
+    loc4: ptr<int> = ptradd arr three;
+    loc5: ptr<int> = ptradd arr four;
+
+    store loc1 e1;
+    store loc2 e2;
+    store loc3 e3;
+    store loc4 e4;
+    store loc5 e5;
+
+    # Redundant `store` operations
+    dummy_val: int = const 999;
+    store loc1 dummy_val;  # Redundant
+    store loc1 e1;         # Correct
+
+    store loc2 dummy_val;  # Redundant
+    store loc2 e2;         # Correct
+
+    # Find the maximum value
+    max_val: int = call @find_max arr size;
+
+    # Print the result
+    print max_val;
+
+    # Cleanup
+    free arr;
+}

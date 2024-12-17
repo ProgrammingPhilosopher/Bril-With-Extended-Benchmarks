@@ -1,0 +1,112 @@
+@pack(size: int, n1: int, n2: int, n3: int, n4: int, n5: int): ptr<int> {
+    one: int = const 1;
+    i: int = const 0;
+    array: ptr<int> = alloc size;
+
+    # Pack data into array manually
+    loc: ptr<int> = ptradd array i;
+    store loc n1;
+    i: int = add i one;
+    loc: ptr<int> = ptradd array i;
+    store loc n2;
+    i: int = add i one;
+    loc: ptr<int> = ptradd array i;
+    store loc n3;
+    i: int = add i one;
+    loc: ptr<int> = ptradd array i;
+    store loc n4;
+    i: int = add i one;
+    loc: ptr<int> = ptradd array i;
+    store loc n5;
+
+    ret array;
+}
+
+@prefix_sum(input: ptr<int>, output: ptr<int>, size: int) {
+    i: int = const 0;
+    one: int = const 1;
+
+    # Initialize the first element of the output array
+    in_loc: ptr<int> = ptradd input i;
+    out_loc: ptr<int> = ptradd output i;
+    value: int = load in_loc;
+    store out_loc value;
+
+    # Increment i to start the loop
+    i: int = add i one;
+
+.loop:
+    cond: bool = lt i size;
+    br cond .body .end;
+
+.body:
+    # Get the previous output value
+    prev_idx: int = sub i one;              # Previous index
+    prev_out_loc: ptr<int> = ptradd output prev_idx;
+    prev_value: int = load prev_out_loc;   # Previous value (now safe)
+
+    # Load the current input value
+    curr_in_loc: ptr<int> = ptradd input i;
+    curr_value: int = load curr_in_loc;
+
+    # Calculate the current prefix sum
+    sum: int = add prev_value curr_value;
+
+    # Redundant memory operations
+    temp: int = const 999;                  # Dummy value
+    curr_out_loc: ptr<int> = ptradd output i;  # Current output location
+    store curr_out_loc temp;                # Redundant store
+    store curr_out_loc sum;                 # Correct store
+
+    # Increment i
+    i: int = add i one;
+    jmp .loop;
+
+.end:
+    nop;
+}
+
+@print_array(array: ptr<int>, size: int) {
+    i: int = const 0;
+    one: int = const 1;
+
+.loop:
+    cond: bool = lt i size;
+    br cond .body .done;
+
+.body:
+    loc: ptr<int> = ptradd array i;
+    val: int = load loc;
+    print val;
+
+    i: int = add i one;
+    jmp .loop;
+
+.done:
+    ret;
+}
+
+@main() {
+    size: int = const 5;
+    e1: int = const 1;
+    e2: int = const 2;
+    e3: int = const 3;
+    e4: int = const 4;
+    e5: int = const 5;
+
+    # Pack array
+    input: ptr<int> = call @pack size e1 e2 e3 e4 e5;
+
+    # Allocate output array
+    output: ptr<int> = alloc size;
+
+    # Calculate prefix sum
+    call @prefix_sum input output size;
+
+    # Print the result
+    call @print_array output size;
+
+    # Cleanup memory
+    free input;
+    free output;
+}

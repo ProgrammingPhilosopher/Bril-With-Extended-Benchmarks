@@ -1,0 +1,13 @@
+@main {
+  one: int = const 1;
+  unused_ptr: ptr<int> = alloc one;
+
+  first_unused: int = const 10;
+  store unused_ptr first_unused;
+
+  second_unused: int = const 20;
+  store unused_ptr second_unused;
+
+  print one;
+  free unused_ptr;
+}

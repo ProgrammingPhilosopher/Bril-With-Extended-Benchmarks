@@ -1,0 +1,19 @@
+@main {
+  init_val: int = const 1;
+  unused_ptr: ptr<int> = alloc init_val;
+
+  new_val: int = const 10;
+  store unused_ptr new_val;
+
+  another_val: int = const 20;
+  store unused_ptr another_val;
+
+  main_ptr: ptr<int> = alloc init_val;
+  store main_ptr init_val;
+
+  final_load: int = load main_ptr;
+  print final_load;
+
+  free unused_ptr;
+  free main_ptr;
+}

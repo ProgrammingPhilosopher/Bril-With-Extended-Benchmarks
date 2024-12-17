@@ -1,0 +1,18 @@
+@main {
+  val1: int = const 10;
+  val2: int = const 20;
+  val3: int = const 30;
+
+  # Allocate a pointer
+  ptr: ptr<int> = alloc val1;
+
+  # Redundant store operations
+  store ptr val1;  # Store val1
+  store ptr val2;  # Immediately overwrite with val2
+  store ptr val3;  # Immediately overwrite with val3 (final value)
+
+  final_val: int = load ptr;
+  print final_val;
+
+  free ptr;
+}

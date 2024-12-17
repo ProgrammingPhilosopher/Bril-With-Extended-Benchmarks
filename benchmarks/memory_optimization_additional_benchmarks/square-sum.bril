@@ -1,0 +1,59 @@
+@sum_of_squares(arr: ptr<int>, size: int): int {
+    i: int = const 0;
+    one: int = const 1;
+    result: int = const 0;
+
+.loop:
+    cond: bool = lt i size;
+    br cond .body .end;
+
+.body:
+    loc: ptr<int> = ptradd arr i;
+    val: int = load loc;
+
+    # Calculate square and add to result
+    square: int = mul val val;
+    sum: int = add result square;
+
+    # Redundant store for testing optimization
+    temp: int = const 999;   
+    result: int = id temp;   
+    result: int = id sum;    
+
+    # Increment i
+    i: int = add i one;
+
+    jmp .loop;
+
+.end:
+    ret result;
+}
+
+@main() {
+    size: int = const 3;
+    e1: int = const 2;
+    e2: int = const 3;
+    e3: int = const 4;
+
+    zero: int = const 0;
+    one: int = const 1;
+    two: int = const 2;
+
+    # Allocate and initialize array
+    arr: ptr<int> = alloc size;
+    loc1: ptr<int> = ptradd arr zero;
+    loc2: ptr<int> = ptradd arr one;
+    loc3: ptr<int> = ptradd arr two;
+    store loc1 e1;
+    store loc2 e2;
+    store loc3 e3;
+
+    # Compute sum of squares
+    result: int = call @sum_of_squares arr size;
+
+    # Print the result
+    print result;
+
+    # Cleanup
+    free arr;
+}

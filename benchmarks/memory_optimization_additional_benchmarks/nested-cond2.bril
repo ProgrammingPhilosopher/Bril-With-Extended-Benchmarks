@@ -1,0 +1,67 @@
+@main {
+  cond1: bool = const true;
+  cond2: bool = const true;
+  cond3: bool = const false;
+
+  val1: int = const 10;
+  val2: int = const 20;
+  val3: int = const 30;
+  val4: int = const 40;
+
+  # Allocate memory for a pointer
+  ptr: ptr<int> = alloc val1;
+
+  # Redundant store: overwritten immediately
+  initial_val: int = const 0;
+  store ptr initial_val;
+
+  # First branch
+  br cond1 .branch1 .branch2;
+
+.branch1:
+  nested_val1: int = const 50;
+  store ptr nested_val1;  # Redundant store
+
+  # Nested branch
+  br cond2 .nested1 .nested2;
+
+.nested1:
+  nested_store1: int = const 60;
+  store ptr nested_store1;  # Overwritten immediately below
+  nested_store2: int = const 70;
+  store ptr nested_store2;  # Correct store
+  jmp .after_branch;
+
+.nested2:
+  nested_store3: int = const 80;
+  store ptr nested_store3;  # Only happens if cond2 is false
+  jmp .after_branch;
+
+.branch2:
+  branch_val: int = const 90;
+  store ptr branch_val;     # Only happens if cond1 is false
+  jmp .after_branch;
+
+.after_branch:
+  # Another conditional overwrite
+  br cond3 .final_branch .skip;
+
+.final_branch:
+  redundant_final: int = const 100;
+  store ptr redundant_final;  # Redundant because it will be overwritten
+  correct_final: int = const 110;
+  store ptr correct_final;    # Correct store
+
+.skip:
+  # Load the value after all branches
+  final_val: int = load ptr;
+  print final_val;
+
+  # Add some computation to ensure load is used
+  extra_val: int = const 1000;
+  sum: int = add final_val extra_val;
+  print sum;
+
+  # Final cleanup
+  free ptr;
+}

@@ -1,0 +1,62 @@
+@main {
+  cond1: bool = const true;
+  cond2: bool = const false;
+
+  val1: int = const 42;
+  val2: int = const 100;
+  val3: int = const 200;
+  val4: int = const 300;
+
+  # Allocate memory for two pointers
+  ptr1: ptr<int> = alloc val1;
+  ptr2: ptr<int> = alloc val2;
+
+  # Store initial values
+  initial1: int = const 0;
+  initial2: int = const 0;
+  store ptr1 initial1;
+  store ptr2 initial2;
+
+  # First conditional branch
+  br cond1 .branch1 .branch2;
+
+.branch1:
+  # Nested condition
+  br cond2 .nested1 .nested2;
+
+.nested1:
+  nested_val1: int = const 500;
+  store ptr1 nested_val1;
+  jmp .end_nested;
+
+.nested2:
+  nested_val2: int = const 600;
+  store ptr1 nested_val2;
+  jmp .end_nested;
+
+.end_nested:
+  alt_val: int = const 700;
+  store ptr2 alt_val;
+  jmp .after_branch;
+
+.branch2:
+  branch_val: int = const 800;
+  store ptr1 branch_val;
+  branch_alt_val: int = const 900;
+  store ptr2 branch_alt_val;
+  jmp .after_branch;
+
+.after_branch:
+  # Perform some operations on loaded values
+  load1: int = load ptr1;
+  load2: int = load ptr2;
+
+  sum: int = add load1 load2;
+  diff: int = sub load1 load2;
+  print sum;
+  print diff;
+
+  # Final cleanup
+  free ptr1;
+  free ptr2;
+}

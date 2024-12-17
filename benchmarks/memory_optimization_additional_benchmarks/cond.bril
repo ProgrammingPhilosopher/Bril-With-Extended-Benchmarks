@@ -1,0 +1,26 @@
+@main {
+  cond: bool = const true;
+  one: int = const 1;
+  ptr: ptr<int> = alloc one;
+
+  initial_val: int = const 0;
+  store ptr initial_val;
+
+  br cond .if_true .if_false;
+
+.if_true:
+  true_val: int = const 500;
+  store ptr true_val;
+  jmp .after;
+
+.if_false:
+  unused_val: int = const 600;
+  store ptr unused_val;
+  jmp .after;
+
+.after:
+  final_value: int = load ptr;
+  print final_value;
+
+  free ptr;
+}
