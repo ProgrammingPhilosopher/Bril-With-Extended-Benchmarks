@@ -1,0 +1,7 @@
+@main {
+  a: int = const 10;
+  b: int = const 20;
+  c: int = add a b;
+  d: int = add a b;   # Redundant assignment
+  print c;
+}

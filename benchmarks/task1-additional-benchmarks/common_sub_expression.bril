@@ -1,0 +1,8 @@
+@main {
+  x: int = const 5;
+  y: int = const 3;
+  a: int = add x y;
+  b: int = add x y;  # Redundant
+  c: int = mul a b;
+  print c;
+}

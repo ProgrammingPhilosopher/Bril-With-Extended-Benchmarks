@@ -1,0 +1,63 @@
+@main {
+  n: int = const 100;
+  i: int = const 0;
+  x: int = const 5;
+  sum: int = const 0;
+
+  # Additional constants for complexity
+  M: int = const 4;    # Inner loop bound
+  zero: int = const 0;
+  one: int = const 1;
+  half: int = const 2;
+
+.outer_cond:
+  cond: bool = lt i n;
+  br cond .outer_body .outer_end;
+
+.outer_body:
+  # Loop-invariant computation
+  t: int = mul x x;            # Invariant: could be hoisted out of loop, but we add complexity to prevent easy optimization.
+
+  # Introduce some computations that aren't directly needed
+  temp_sub: int = sub t i;     # Not used in the final sum
+  temp_div: int = div temp_sub half;  # Another unused result
+
+  j: int = const 0;
+
+.inner_cond:
+  cond_j: bool = lt j M;
+  br cond_j .inner_body .inner_end;
+
+.inner_body:
+  # Use 't' again with i and j
+  a: int = add t j;
+  b: int = mul a i;
+  c: int = add b sum;          # Incorporate the current sum
+
+  # Add a condition that never holds to create unreachable code
+  dead_cond: bool = eq zero one; # Always false
+  br dead_cond .unreachable .normal_flow;
+
+.unreachable:
+  # Unreachable computations
+  dead_val: int = mul i x;     # Never executed
+  dead_val2: int = add dead_val c; # Never executed
+  jmp .normal_flow;
+
+.normal_flow:
+  # Actual accumulation
+  sum: int = add sum c;        # Incorporate the computed value into sum
+
+  # Another dead computation (not used in final output)
+  dead_val3: int = mul sum sum;
+
+  j: int = add j one;          # Increment j
+  jmp .inner_cond;
+
+.inner_end:
+  i: int = add i one;            # Increment i
+  jmp .outer_cond;
+
+.outer_end:
+  print sum;                   # Print the accumulated sum
+}

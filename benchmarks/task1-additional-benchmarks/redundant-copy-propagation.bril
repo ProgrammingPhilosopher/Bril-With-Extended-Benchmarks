@@ -1,0 +1,7 @@
+@main {
+  a: int = const 42;
+  b: int = id a;        # Redundant copy
+  c: int = id b;        # Another redundant copy
+  dead: int = add a c;  # Computation never used
+  print c;
+}

@@ -1,0 +1,22 @@
+@main {
+  cond: bool = const false;
+  br cond .then .else;
+
+.then:
+  a: int = const 10;
+  print a;
+  jmp .end;
+
+.else:
+  b: int = const 20;
+  print b;
+  br cond .dead_block .end;  # Make sure to end with a semicolon!
+
+.dead_block:
+  w: int = add b b;
+  print w;
+  jmp .end;
+
+.end:
+  ret;
+}

@@ -1,0 +1,93 @@
+@main {
+  # Introduce various constants and computations upfront
+  a: int = const 5;
+  b: int = const 6;
+  c: int = add a b;       # c = 11
+  d: int = mul c c;       # d = 121 (used later)
+  e: int = const 2;
+  f: int = const 0;       # Will be used for conditions
+  g: int = const 1;       # Another constant
+
+  # Condition always true, making '.else' unreachable
+  cond: bool = const true;
+  br cond .then .else;
+
+.then:
+  x: int = const 10;
+  i: int = const 0;
+  n: int = const 5;
+  sum: int = const 0;
+
+.loop_cond:
+  cond_loop: bool = lt i n;
+  br cond_loop .loop_body .loop_end;
+
+.loop_body:
+  # Perform computations that mix pre-loop constants with loop variables
+  tmp: int = add x a;      # tmp = 10 + 5 = 15
+  tmp2: int = mul tmp b;   # tmp2 = 15 * 6 = 90
+  sum: int = add sum tmp2; # Accumulate into sum
+
+  # Unreachable code inside the loop
+  cond2: bool = eq a b;    # eq(5,6) -> always false
+  br cond2 .unreachable_in_then .normal_in_then;
+
+.unreachable_in_then:
+  # Dead computations inside unreachable block
+  dead_val: int = add sum d;   # Not used anywhere
+  dead_val2: int = mul dead_val e; # More dead code
+  jmp .normal_in_then;
+
+.normal_in_then:
+  i: int = add i g;  # i++
+  jmp .loop_cond;
+
+.loop_end:
+  # Print some results to keep sum and x "alive"
+  print sum;
+  print x;
+  jmp .end;
+
+.else:
+  # Unreachable due to cond always true
+  x: int = const 20;
+  j: int = const 0;
+  m: int = const 3;
+  
+.inner_cond:
+  cond_inner: bool = lt j m;
+  br cond_inner .inner_body .inner_end;
+
+.inner_body:
+  # Similar computations as in .then to add complexity
+  tmp3: int = add x c;
+  tmp4: int = mul tmp3 d;
+  # Another always-false condition
+  cond3: bool = eq f g;  # eq(0,1) -> false
+  br cond3 .unreachable_in_else .normal_in_else;
+
+.unreachable_in_else:
+  dead_val3: int = add tmp4 x;
+  dead_val4: int = mul dead_val3 sum;  # sum from .then is never accessible here
+  jmp .normal_in_else;
+
+.normal_in_else:
+  j: int = add j g;
+  jmp .inner_cond;
+
+.inner_end:
+  print x;
+  # After this block, the code would continue, but remember, this is unreachable anyway.
+
+# Dead code after the .else block, never reached
+x: int = const 30;    # Dead assignment
+dead_final: int = mul x d;   # Another dead computation
+print x;               # Dead print
+
+.end:
+  # Add some final computations that .then block jumps to
+  result: int = add sum d;  # sum from loop_end combined with d
+  dead_final2: int = mul result c; # Not printed, partially dead
+  print result;             # Print something at the end
+  ret;
+}

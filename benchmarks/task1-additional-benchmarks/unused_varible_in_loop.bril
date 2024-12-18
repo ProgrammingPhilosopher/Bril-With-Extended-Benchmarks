@@ -1,0 +1,51 @@
+@main {
+  n: int = const 10;
+  i: int = const 0;
+  sum: int = const 0;
+  M: int = const 10;
+  one: int = const 1;
+  zero: int = const 0;
+  half: int = const 2;
+
+.outer_cond:
+  outer_cond_bool: bool = lt i n;
+  br outer_cond_bool .outer_body .outer_end;
+
+.outer_body:
+  j: int = const 0;
+
+.inner_cond:
+  inner_cond_bool: bool = lt j M;
+  br inner_cond_bool .inner_body .inner_end;
+
+.inner_body:
+  a: int = mul i i;      # Computation based on outer loop var
+  b: int = mul j j;      # Computation based on inner loop var
+  c: int = add a b;
+  d: int = add c i;      # Add outer loop var again
+  e: int = add d j;      # Add inner loop var
+  f: int = sub e c;      # Some redundant arithmetic
+  g: int = div f half;   # Division by a constant
+
+  dead1: int = mul g g;  # Computation never used
+  dead2: int = add dead1 c; # Another never-used computation
+
+  never_true: bool = eq zero one; # Always false
+  br never_true .impossible .normal_flow;
+
+.impossible:
+  h: int = add sum zero; # Unreachable block
+  jmp .normal_flow;
+
+.normal_flow:
+  sum: int = add sum g;  # Accumulate something from the computed value
+  j: int = add j one;    # Increment inner loop
+  jmp .inner_cond;
+
+.inner_end:
+  i: int = add i one;    # Increment outer loop
+  jmp .outer_cond;
+
+.outer_end:
+  print sum;
+}

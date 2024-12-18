@@ -1,0 +1,82 @@
+@main {
+  # Original setup
+  x: int = const 4;
+  y: int = const 2;
+  one: int = const 1;
+  zero: int = const 0;
+  half: int = const 2;
+  
+  # Original redundant computations
+  a: int = add x y;
+  b: int = add x y;        # Redundant with 'a'
+  c: int = mul a b;
+  d: int = mul a a;        # Partial redundancy
+  
+  # Additional constants
+  n: int = const 5;
+  m: int = const 3;
+  i: int = const 0;
+  sum: int = const 0;
+  
+  # Introduce a loop with loop-invariant computations mixed in
+.outer_cond:
+  cond_outer: bool = lt i n;
+  br cond_outer .outer_body .outer_end;
+  
+.outer_body:
+  # Some loop-invariant computations
+  # Even though 't' is invariant w.r.t the inner loop, it's still recalculated every time
+  t: int = mul x x;   # Could be hoisted out by an optimizer, but we do it inside the loop
+  
+  j: int = const 0;
+.inner_cond:
+  cond_inner: bool = lt j m;
+  br cond_inner .inner_body .inner_end;
+
+.inner_body:
+  # Use previously computed values to form complex expressions
+  # Attempt to mix values to prevent trivial CSE
+  p: int = add c d;          # c and d were computed once outside loops
+  q: int = mul p t;          # Combine outer invariant t with p
+  r: int = add q a;          # Add 'a' from outside loops
+  s: int = add r b;          # Add 'b' from outside loops (redundant with a)
+  
+  # Dead computations (never used)
+  dead_cond: bool = eq zero one;  # Always false
+  br dead_cond .unreachable .normal_path;
+
+.unreachable:
+  # Unreachable computations
+  dead_val1: int = add x y;
+  dead_val2: int = mul dead_val1 s;
+  jmp .normal_path;
+
+.normal_path:
+  # Accumulate some results to keep at least some computations "alive"
+  sum: int = add sum s;
+  
+  # Another dead computation
+  dead_val3: int = mul sum sum;   # not used later
+  
+  j: int = add j one;
+  jmp .inner_cond;
+
+.inner_end:
+  i: int = add i one;
+  jmp .outer_cond;
+
+.outer_end:
+  # Introduce further complexity after loops
+  # Another redundant computation after loops
+  u: int = mul x x;    # Same as t, computed again
+  v: int = add u sum;  # Final combination
+
+  # Yet another dead computation
+  dead_val4: int = sub v d;  # Not used
+
+  # Print some final results (c, d from start, sum from loops, v final)
+  print c;
+  print d;
+  print sum;
+  print v;
+}
