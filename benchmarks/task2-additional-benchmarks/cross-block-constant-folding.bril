@@ -1,0 +1,77 @@
+@main {
+  # Global constants
+  a: int = const 2;
+  b: int = const 3;
+  three: int = const 3;
+  one: int = const 1;
+  zero: int = const 0;
+  t: bool = const true;
+  f: bool = const false;
+
+  # Always take .bb1, making .bb2 unreachable, but let's add complexity so it might become reachable in other scenarios.
+  br t .bb1 .bb2;
+
+.bb1:
+  # c is computed here from known constants a and b
+  c: int = mul a b;  # c = 2 * 3 = 6
+  # Introduce a nested condition that doesn’t affect c
+  br f .bb1_inner .bb1_next;
+
+.bb1_inner:
+  # Unreachable code: can be removed
+  c2: int = add c a;  # c2 = 6 + 2 = 8, never used
+  print c2;
+  jmp .bb1_next;
+
+.bb1_next:
+  jmp .bb3;
+
+.bb2:
+  # Another definition of c, identical to .bb1
+  c: int = mul a b;  # c = 2 * 3 = 6
+  # A different unreachable inner branch
+  br f .bb2_inner .bb2_next;
+
+.bb2_inner:
+  # Also unreachable
+  unused: int = sub c b; # 6 - 3 = 3, never used
+  print unused;
+  jmp .bb2_next;
+
+.bb2_next:
+  jmp .bb3;
+
+.bb3:
+  # At .bb3, c is known to be 6 from either path (.bb1 or .bb2), allowing cross-block constant folding.
+  # We print c, which should always be 6.
+  print c;
+
+  # Add a loop that uses c to ensure the folded value propagates beyond a merge.
+  i: int = const 0;
+.loop_cond:
+  cond_loop: bool = lt i three;
+  br cond_loop .loop_body .loop_end;
+
+.loop_body:
+  # Use c inside the loop. Since c is known to be 6, this can be further folded.
+  val: int = add c i;      # val = 6 + i
+  print val;               # Prints 6, 7, 8 over iterations
+  i: int = add i one;
+  jmp .loop_cond;
+
+.loop_end:
+  # After the loop, do more computations with c
+  d: int = mul c c;   # d = 6 * 6 = 36, can be folded as well
+  print d;            # Prints 36
+
+  # Another unreachable branch to test folding and CFG cleanup
+  br f .dead_block .end;
+
+.dead_block:
+  dead_val: int = mul d a; # 36 * 2 = 72, not used
+  print dead_val;
+  jmp .end;
+
+.end:
+  ret;
+}

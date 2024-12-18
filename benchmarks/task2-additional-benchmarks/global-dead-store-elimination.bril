@@ -1,0 +1,46 @@
+@main {
+  # Initial constants
+  a: int = const 10;
+  b: int = const 5;
+  c: int = const 2;
+  ten: int = const 10;
+
+  # Overwrite 'a' multiple times before it's ever used.
+  # Only the last definition of 'a' that reaches its use is relevant.
+  a: int = const 20;   # Dead store, never used before overwritten again
+  a: int = add a b;    # a = 20 + 5 = 25
+  a: int = mul a c;    # a = 25 * 2 = 50
+  # Up to here, no usage of 'a' has occurred, so the earlier writes are dead.
+
+  # Introduce a conditional branch to add complexity.
+  t: bool = const true;
+  br t .path1 .path2;
+
+.path1:
+  a: int = add a b;  # a = 50 + 5 = 55 overwriting previous a again
+  # This overwrites the previously computed a=50, making that definition dead if we only take this path.
+  # If control flow merges again, must consider liveness globally.
+  jmp .merge;
+
+.path2:
+  # Another dead write scenario if unreachable.
+  a: int = sub a b;  # a = 50 - 5 = 45
+  # If this block is never reached, this store is dead.
+  jmp .merge;
+
+.merge:
+  # Use 'a' here. The final value of 'a' might be 55 (if path1 is taken) or 45 (if path2 is possible).
+  # Global analysis should confirm which definitions of 'a' are actually live.
+  d: int = add a ten;
+  print d;
+
+  # Additional computations that never use some variables:
+  # e is never used, making this store dead unless removed
+  e: int = const 100; 
+  # Another unused variable, f
+  f: int = add e d;
+
+  # Final print to ensure d stays live
+  print d;
+  ret;
+}

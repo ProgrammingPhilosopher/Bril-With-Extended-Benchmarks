@@ -1,0 +1,64 @@
+@main {
+  x: int = const 10;
+  y: int = const 20;
+  t: bool = const true;
+  f: bool = const false;
+
+  one: int = const 1;
+  two: int = const 2;
+  three: int = const 3;  # For the second loop later on
+
+  # The branch always goes to .bb1, making .bb2 unreachable under normal conditions
+  br t .bb1 .bb2;
+
+.bb1:
+  # Redefine x
+  x: int = mul x y;    # x = 10 * 20 = 200
+  tmp1: int = add x y; # 200 + 20 = 220 (unused)
+  tmp2: int = mul x x; # 200 * 200 = 40000 (unused)
+
+  # Introduce a small loop with a back edge to test data flow
+  i: int = const 0;
+
+.back_edge_cond:
+  c1: bool = lt i two;  # Use 'two' instead of a literal 2
+  br c1 .back_jump .bb1_end;
+
+.back_jump:
+  # Loop body: increment i and jump back
+  i: int = add i one;
+  jmp .back_edge_cond;
+
+.bb1_end:
+  # After possibly looping, we jump to .bb3
+  jmp .bb3;
+
+.bb2:
+  # Unreachable under current conditions, but if changed, x would be different
+  x: int = add x y;    # x = 10 + 20 = 30
+  tmp3: int = sub x y; # 30 - 20 = 10 (unused)
+  jmp .bb3;
+
+.bb3:
+  # Merge point: x could be 200 (from .bb1) or 30 (from .bb2 if ever taken)
+  # Requires data flow analysis to determine possible reaching defs of x
+  print x;
+
+  # Another loop for complexity and further data flow checks
+  j: int = const 0;
+
+.loop_cond:
+  c2: bool = lt j three;  # Use 'three' instead of a literal 3
+  br c2 .loop_body .loop_end;
+
+.loop_body:
+  zz: int = mul x j;   # depends on which path defined x
+  print zz;            
+  j: int = add j one;
+  jmp .loop_cond;
+
+.loop_end:
+  # Some final computations that might be unused
+  final_val: int = add x y; # Either 220 or 50, depending on x’s definition path
+  ret;
+}

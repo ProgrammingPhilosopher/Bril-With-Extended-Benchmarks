@@ -1,0 +1,19 @@
+@main {
+  a: int = const 10;
+  b: int = const 20;
+
+  t: bool = const true;    # Define a boolean variable 't' that holds the value true
+  br t .bb1 .bb2;          # Now use 't' instead of 'true'
+
+.bb1:
+  c: int = add a b;
+  print c;
+  jmp .end;
+
+.bb2:
+  d: int = mul a b;
+  print d;
+  jmp .end;
+
+.end:
+}

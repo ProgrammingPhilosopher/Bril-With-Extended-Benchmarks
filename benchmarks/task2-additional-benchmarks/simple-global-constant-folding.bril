@@ -1,0 +1,20 @@
+@main {
+  a: int = const 10;
+  b: int = const 20;
+  t: bool = const true;  # Define a boolean variable 't' with value true
+
+  # Use 't' as the condition for the branch
+  br t .bb1 .bb2;
+
+.bb1:
+  c: int = add a b;  # Should fold to 30
+  print c;
+  jmp .end;
+
+.bb2:
+  d: int = mul a b;  # Should fold to 200
+  print d;
+  jmp .end;
+
+.end:
+}

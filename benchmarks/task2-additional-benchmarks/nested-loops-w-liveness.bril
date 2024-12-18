@@ -1,0 +1,60 @@
+@main {
+  # Global constants
+  a: int = const 10;
+  i: int = const 0;
+  one: int = const 1;
+  zero: int = const 0;
+  five: int = const 5;
+  
+.outer.loop:
+  cond1: bool = lt i five;          # Outer loop runs i = 0 to 4
+  br cond1 .inner.init .end;
+
+.inner.init:
+  # Inner loop initialization
+  j: int = const 0;
+  # Some loop-invariant computations that could be hoisted or constant folded
+  inv: int = mul a a;            # inv = 10 * 10 = 100, never used directly
+  jmp .inner.loop;
+
+.inner.loop:
+  cond2: bool = lt j five;          # Inner loop runs j = 0 to 4
+  br cond2 .inner.body .outer.inc;
+
+.inner.body:
+  # A value derived from a and i, used to print within inner loop
+  b: int = mul a i;              # b is live only in this inner body, printed each iteration
+  print b;
+  
+  # Introduce a dead calculation that never affects output
+  # w depends on b, but never used
+  w: int = add b j;              # w = b + j, not printed or used
+
+  # Unreachable code: always false condition inside inner loop
+  f: bool = eq one zero;         # always false
+  br f .unreachable_in_loop .continue_inner;
+
+.unreachable_in_loop:
+  # Dead code block never reached
+  dead_val: int = add w w;       # not used
+  print dead_val;
+  jmp .continue_inner;
+
+.continue_inner:
+  j: int = add j one;            # Increment inner loop counter
+  jmp .inner.loop;
+
+.outer.inc:
+  # After inner loop finishes, increment i for the outer loop
+  # Introduce another unused computation here
+  temp: int = add i inv;         # temp = i + 100, never printed
+  i: int = add i one;
+  jmp .outer.loop;
+
+.end:
+  # After all loops, do some computations that are never used
+  # This tests whether global liveness analysis removes them.
+  c: int = add a i;              # c may or may not be needed, not printed
+  d: int = mul c c;              # d = c^2, also unused
+  ret;
+}

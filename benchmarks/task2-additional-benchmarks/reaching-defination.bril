@@ -1,0 +1,71 @@
+@main {
+  # Initial global constants
+  a: int = const 10;
+  five: int = const 5;
+  one: int = const 1;
+  b: int = const 20;
+  x: int = const 2;
+  y: int = const 3;
+  
+  t: bool = const true;
+  f: bool = const false;
+
+  # Always takes .bb1, making .bb2 unreachable
+  br t .bb1 .bb2;
+
+.bb1:
+  # Redefinition of a
+  a: int = const 30;    # Reaching definitions: which 'a' is in scope?
+  print a;              # Should print 30
+
+  # Introduce a loop
+  i: int = const 0;
+.loop_cond:
+  cond: bool = lt i five;
+  br cond .loop_body .loop_end;
+
+.loop_body:
+  # Compute something using global constants (can be folded)
+  w: int = mul x y;    # w = 2 * 3 = 6, loop-invariant
+  # Redundant computations that never affect program output
+  unused: int = add w i;  # Could be folded & possibly eliminated after analysis
+
+  # Print a to ensure 'a' stays live. This shows we keep 'a = 30' in mind
+  print a;            
+  
+  # Always false branch inside the loop
+  br f .dead_in_loop .continue_loop;
+
+.dead_in_loop:
+  # Unreachable code
+  dead_val: int = add w w;  # 6 + 6 = 12, never used
+  print dead_val;
+  jmp .continue_loop;
+
+.continue_loop:
+  i: int = add i one;
+  jmp .loop_cond;
+
+.loop_end:
+  # Another definition for b
+  b: int = add b a;     # b = 20 + 30 = 50
+  # Print b to ensure it’s live
+  print b;
+  jmp .end;
+
+.bb2:
+  # Unreachable block, since we always branch to .bb1
+  # Original a is still 10 here if this block were reached
+  print a;  # Would print 10 if reachable
+  # Additional unused computations
+  z: int = add a b;  # a=10, b=20 => 30, never executed
+  print z;
+  jmp .end;
+
+.end:
+  # More computations for folding and possible removal
+  c: int = mul y y;      # c = 3 * 3 = 9, possibly folded
+  d: int = add c x;      # d = 9 + 2 = 11, possibly folded
+  # No print for c or d, so they may be removed after liveness analysis
+  ret;
+}

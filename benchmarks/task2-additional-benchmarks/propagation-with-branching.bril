@@ -1,0 +1,44 @@
+@main {
+  x: int = const 5;
+  y: int = const 10;
+  five: int = const 5;
+  t: bool = const true;
+  f: bool = const false;
+
+  # Always branches to .bb1 since t = true
+  br t .bb1 .bb2;
+
+.bb1:
+  # Arithmetic with known constants (can be folded)
+  a: int = add x y;   # a = 5 + 10 = 15
+  b: int = mul a x;   # b = 15 * 5 = 75
+  c: int = sub b y;   # c = 75 - 10 = 65
+  print c;            # Prints 65
+
+  # Unreachable branch inside .bb1 (f = false)
+  br f .dead .bb1_end;
+
+.dead:
+  # Unreachable code that can be removed
+  dead_val: int = add c c;  # 65 + 65 = 130, never used
+  print dead_val;
+  jmp .bb1_end;
+
+.bb1_end:
+  jmp .end;
+
+.bb2:
+  # This block is never reached since t is always true
+  z: int = const 20;
+  w: int = add x z;     # w = 5 + 20 = 25
+  unused: int = mul w y; # 25 * 10 = 250, never printed
+  print z;               # Would print 20 if reached
+  jmp .end;
+
+.end:
+  # More constant folding possible here
+  final: int = add x y;   # final = 5 + 10 = 15
+  final2: int = mul final final; # 15 * 15 = 225
+  print final2;            # Prints 225
+  ret;
+}

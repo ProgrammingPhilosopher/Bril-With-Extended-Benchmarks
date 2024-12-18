@@ -1,0 +1,66 @@
+@main {
+  # Global constants
+  x: int = const 3;
+  y: int = const 4;
+  one: int = const 1;
+  zero: int = const 0;
+  ten: int = const 10;
+  
+  # The loop counter
+  i: int = const 0;
+
+.for.cond:
+  cond: bool = lt i ten;
+  br cond .for.body .for.end;
+
+.for.body:
+  # Loop-invariant computations: z and w depend only on x and y (both constants)
+  z: int = add x y;         # z = 3 + 4 = 7 (invariant)
+  w: int = mul z z;         # w = 7 * 7 = 49 (invariant)
+  
+  # Print the loop-invariant z each iteration
+  print z;
+
+  # A dead branch inside the loop: f is always false
+  f: bool = eq one zero;    # Always false
+  br f .unreachable_in_loop .loop_continue;
+
+.unreachable_in_loop:
+  # Dead code: never reached
+  dead_val: int = add w w;  # 49 + 49 = 98, unused
+  print dead_val;
+  jmp .loop_continue;
+
+.loop_continue:
+  # Increment i
+  i: int = add i one;
+  
+  # Extra computations never used again
+  temp: int = sub w x;  # 49 - 3 = 46, not used
+  temp2: int = add temp y; # 46 + 4 = 50, also not used
+
+  jmp .for.cond;
+
+.for.end:
+  # After the loop, do some more constant computations
+  a: int = mul x y;      # a = 3 * 4 = 12
+  b: int = add a z;      # b = 12 + 7 = 19 (z known from earlier)
+  c: int = sub b w;      # c = 19 - 49 = -30
+
+  # Print c to ensure some values remain live
+  print c;
+
+  # Another always-false branch to unreachable code
+  br f .dead_block .exit;
+
+.dead_block:
+  # Unreachable code after the loop
+  dead_val2: int = add b c;   # 19 + (-30) = -11, never printed
+  dead_val3: int = mul dead_val2 w; # another unused computation
+  print dead_val2;
+  jmp .exit;
+
+.exit:
+  # End
+  ret;
+}
